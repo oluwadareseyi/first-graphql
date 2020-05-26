@@ -34,6 +34,7 @@ module.exports = buildSchema(`
     input PostInputData {
         title: String!
         content: String!
+        imageUrl: String!
     }
 
     type RootQuery {

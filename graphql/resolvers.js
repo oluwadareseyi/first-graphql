@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const Post = require("../models/post");
 const errorHandler = require("../util/error");
 
 module.exports = {
@@ -70,5 +71,28 @@ module.exports = {
     );
 
     return { token, userId: user._id.toString() };
+  },
+
+  createPost: async ({ postInput }, req) => {
+    const { title, content, imageUrl } = postInput;
+    !validator.isLength(title, { min: 5 }) &&
+      errorHandler("title must contain at least 5 characters", 422);
+    !validator.isLength(content, { min: 5 }) &&
+      errorHandler("content must contain at least 5 characters", 422);
+
+    const post = new Post({
+      title,
+      content,
+      imageUrl,
+    });
+
+    const createdPost = await post.save();
+
+    return {
+      ...createdPost._doc,
+      _id: createdPost._id.toString(),
+      createdAt: createdPost.createdAt.toISOString(),
+      updatedAt: createdPost.updatedAt.toISOString(),
+    };
   },
 };
