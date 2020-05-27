@@ -74,19 +74,25 @@ module.exports = {
   },
 
   createPost: async ({ postInput }, req) => {
+    !req.isAuth && errorHandler("Not Authenticated", 401);
     const { title, content, imageUrl } = postInput;
     !validator.isLength(title, { min: 5 }) &&
       errorHandler("title must contain at least 5 characters", 422);
     !validator.isLength(content, { min: 5 }) &&
       errorHandler("content must contain at least 5 characters", 422);
 
+    const user = await User.findById(req.userId);
+    !user && errorHandler("Invalid User", 401);
     const post = new Post({
       title,
       content,
       imageUrl,
+      creator: user,
     });
 
     const createdPost = await post.save();
+    user.posts.push(createdPost);
+    await user.save();
 
     return {
       ...createdPost._doc,

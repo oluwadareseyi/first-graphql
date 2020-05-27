@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const uuidv4 = require("uuid/v4");
 const graphqlHttp = require("express-graphql");
-
+const auth = require("./middleware/isAuth");
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
 
@@ -50,6 +50,7 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 // app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
+app.use(auth);
 app.use(
   "/graphql",
   graphqlHttp({

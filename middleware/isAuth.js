@@ -3,19 +3,28 @@ const errorHandler = require("../util/error");
 
 module.exports = async (req, res, next) => {
   const token = req.get("Authorization");
+  console.log(token);
+
   let decodedToken;
+
+  if (!token) {
+    req.isAuth = false;
+    return next();
+  }
 
   try {
     decodedToken = jwt.verify(token, "secretdonttellanyone");
   } catch (error) {
-    error.statusCode = 500;
-    throw error;
+    req.isAuth = false;
+    return next();
   }
 
   if (!decodedToken) {
-    errorHandler("Not Authenticated", 401);
+    req.isAuth = false;
+    return next();
   }
 
   req.userId = decodedToken.userId;
+  req.isAuth = true;
   next();
 };
