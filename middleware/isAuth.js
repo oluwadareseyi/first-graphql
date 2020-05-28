@@ -1,10 +1,8 @@
 const jwt = require("jsonwebtoken");
-const errorHandler = require("../util/error");
+// const errorHandler = require("../util/error");
 
 module.exports = async (req, res, next) => {
   const token = req.get("Authorization");
-  console.log(token);
-
   let decodedToken;
 
   if (!token) {
