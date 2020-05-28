@@ -5,6 +5,7 @@ const cors = require("cors");
 const app = express();
 const port = 5000;
 const path = require("path");
+const fs = require("fs");
 const { dbKey } = require("./util/keys");
 const mongoose = require("mongoose");
 const multer = require("multer");
@@ -13,14 +14,15 @@ const graphqlHttp = require("express-graphql");
 const auth = require("./middleware/isAuth");
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
+const errorHandler = require("./util/error");
 
 app.use(cors());
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: (req, file, cb) => {
     cb(null, "images");
   },
-  filename: function (req, file, cb) {
+  filename: (req, file, cb) => {
     cb(null, uuidv4() + file.originalname);
   },
 });
@@ -51,6 +53,19 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 app.use(morgan("dev"));
 
 app.use(auth);
+
+app.put("/post-image", (req, res, next) => {
+  !req.isAuth && errorHandler("Not Authenticated", 401);
+  if (!req.file) {
+    return res.status(200).json({ message: "No file provided!" });
+  }
+
+  req.body.oldPath && clearImage(req.body.oldPath);
+
+  return res
+    .status(201)
+    .json({ message: "file stored", filePath: req.file.path });
+});
 app.use(
   "/graphql",
   graphqlHttp({
@@ -91,3 +106,10 @@ mongoose
     console.log("database successfully connected");
   })
   .catch((err) => console.log(err));
+
+const clearImage = (filePath) => {
+  filePath = path.join(__dirname, "..", filePath);
+  fs.unlink(filePath, (err) => {
+    console.log(err);
+  });
+};
