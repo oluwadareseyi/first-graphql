@@ -60,11 +60,15 @@ app.put("/post-image", (req, res, next) => {
     return res.status(200).json({ message: "No file provided!" });
   }
 
+  let imageUrl;
+
+  if (req.file) {
+    imageUrl = req.file.path.replace("\\", "/");
+  }
+
   req.body.oldPath && clearImage(req.body.oldPath);
 
-  return res
-    .status(201)
-    .json({ message: "file stored", filePath: req.file.path });
+  return res.status(201).json({ message: "file stored", filePath: imageUrl });
 });
 app.use(
   "/graphql",
