@@ -134,6 +134,8 @@ module.exports = {
     !req.isAuth && errorHandler("Not Authenticated", 401);
     const post = await Post.findById(postId).populate("creator");
 
+    !post && errorHandler("No post found", 404);
+
     return {
       ...post._doc,
       _id: post.id.toString(),
