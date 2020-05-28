@@ -143,4 +143,36 @@ module.exports = {
       updatedAt: post.updatedAt.toISOString(),
     };
   },
+
+  updatePost: async ({ postId, postInput }, req) => {
+    !req.isAuth && errorHandler("Not Authenticated", 401);
+    const post = await Post.findById(postId).populate("creator");
+    !post && errorHandler("No post found", 404);
+
+    // check if the user id we get from the authorization header sent from the front end matchs the ID of the creator. If false, we know the creator is not the owner of the post being edited.
+    post.creator._id.toString() !== req.userId.toString() &&
+      errorHandler("Not authorized", 401);
+
+    const { title, content, imageUrl } = postInput;
+
+    !validator.isLength(title, { min: 5 }) &&
+      errorHandler("title must contain at least 5 characters", 422);
+    !validator.isLength(content, { min: 5 }) &&
+      errorHandler("content must contain at least 5 characters", 422);
+
+    post.title = title;
+    post.content = content;
+    if (imageUrl !== "undefined") {
+      post.imageUrl = imageUrl;
+    }
+
+    const updatedPost = await post.save();
+
+    return {
+      ...updatedPost._doc,
+      _id: updatedPost.id.toString(),
+      createdAt: updatedPost.createdAt.toISOString(),
+      updatedAt: updatedPost.updatedAt.toISOString(),
+    };
+  },
 };
