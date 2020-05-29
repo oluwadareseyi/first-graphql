@@ -195,7 +195,7 @@ module.exports = {
     !req.isAuth && errorHandler("Not Authenticated", 401);
     const user = await User.findById(req.userId);
 
-    !user && errorHandler("USer not found", 404);
+    !user && errorHandler("User not found", 404);
     return { ...user._doc, _id: user._id.toString() };
   },
 
