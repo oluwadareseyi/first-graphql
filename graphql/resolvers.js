@@ -190,4 +190,18 @@ module.exports = {
     await user.save();
     return true;
   },
+
+  status: async (_, req) => {
+    !req.isAuth && errorHandler("Not Authenticated", 401);
+    const user = await User.findById(req.userId);
+    return user.status;
+  },
+
+  updateStatus: async ({ statusInput }, req) => {
+    !req.isAuth && errorHandler("Not Authenticated", 401);
+    const user = await User.findById(req.userId);
+    user.status = statusInput;
+    const updatedUser = await user.save();
+    return updatedUser.status;
+  },
 };
