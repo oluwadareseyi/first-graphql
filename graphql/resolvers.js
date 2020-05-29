@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const Post = require("../models/post");
 const errorHandler = require("../util/error");
+const { clearImage } = require("../util/file");
 
 module.exports = {
   // use the createUser mutation to create a new user
@@ -174,5 +175,19 @@ module.exports = {
       createdAt: updatedPost.createdAt.toISOString(),
       updatedAt: updatedPost.updatedAt.toISOString(),
     };
+  },
+
+  deletePost: async ({ postId }, req) => {
+    !req.isAuth && errorHandler("Not Authenticated", 401);
+    const post = await await Post.findById(postId);
+    !post && errorHandler("No post found", 404);
+    post.creator.toString() !== req.userId.toString() &&
+      errorHandler("Not authorized", 401);
+    clearImage(post.imageUrl);
+    await Post.findByIdAndRemove(postId);
+    const user = await User.findById(req.userId);
+    user.posts.pull(postId);
+    await user.save();
+    return true;
   },
 };

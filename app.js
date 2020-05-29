@@ -5,7 +5,7 @@ const cors = require("cors");
 const app = express();
 const port = 5000;
 const path = require("path");
-const fs = require("fs");
+const { clearImage } = require("./util/file");
 const { dbKey } = require("./util/keys");
 const mongoose = require("mongoose");
 const multer = require("multer");
@@ -70,6 +70,12 @@ app.put("/post-image", (req, res, next) => {
 
   return res.status(201).json({ message: "file stored", filePath: imageUrl });
 });
+
+app.put("/delete-image", (req, res, next) => {
+  !req.isAuth && errorHandler("Not Authenticated", 401);
+  clearImage(req.body.imagePath);
+  next();
+});
 app.use(
   "/graphql",
   graphqlHttp({
@@ -110,10 +116,3 @@ mongoose
     console.log("database successfully connected");
   })
   .catch((err) => console.log(err));
-
-const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "..", filePath);
-  fs.unlink(filePath, (err) => {
-    console.log(err);
-  });
-};
