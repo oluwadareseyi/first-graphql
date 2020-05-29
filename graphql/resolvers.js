@@ -191,15 +191,20 @@ module.exports = {
     return true;
   },
 
-  status: async (_, req) => {
+  user: async (_, req) => {
     !req.isAuth && errorHandler("Not Authenticated", 401);
     const user = await User.findById(req.userId);
-    return user.status;
+
+    !user && errorHandler("USer not found", 404);
+    return { ...user._doc, _id: user._id.toString() };
   },
 
   updateStatus: async ({ statusInput }, req) => {
     !req.isAuth && errorHandler("Not Authenticated", 401);
     const user = await User.findById(req.userId);
+
+    !user && errorHandler("User not found", 404);
+
     user.status = statusInput;
     const updatedUser = await user.save();
     return updatedUser.status;
